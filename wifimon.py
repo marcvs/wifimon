@@ -216,9 +216,7 @@ class wifiEssid:
 			self.authentication	 = self.cells[cell.mac].authentication
 			self.group_cipher	 = self.cells[cell.mac].group_cipher
 			self.pair_cipher	 = self.cells[cell.mac].pair_cipher
-			print ('aaa')
 		else: # if the cell already exists we don't copy the crypto settings
-			print ('---')
 			self.cells[cell.mac] = copy.deepcopy(cell)
 
 class WifiInformation:
