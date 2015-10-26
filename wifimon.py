@@ -206,14 +206,19 @@ class wifiEssid:
 			self.cells[cell[0]].display(show_essid=False)
 
 	def add_cell(self, cell):
-		if not exists(self.cells[cell.mac]):
+		#if not exists(self.cells[cell.mac]):
+		#if hasattr(self.cells, cell.mac):
+		#if self.cells[cell.mac] in locals():
+		if not cell.mac in self.cells.iterkeys():
 			self.cells[cell.mac] = copy.deepcopy(cell)
 			self.encryption		 = self.cells[cell.mac].encryption
 			self.crypto			 = self.cells[cell.mac].crypto
 			self.authentication	 = self.cells[cell.mac].authentication
 			self.group_cipher	 = self.cells[cell.mac].group_cipher
 			self.pair_cipher	 = self.cells[cell.mac].pair_cipher
+			print ('aaa')
 		else: # if the cell already exists we don't copy the crypto settings
+			print ('---')
 			self.cells[cell.mac] = copy.deepcopy(cell)
 
 class WifiInformation:
