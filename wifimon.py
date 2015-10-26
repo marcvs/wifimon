@@ -206,12 +206,15 @@ class wifiEssid:
 			self.cells[cell[0]].display(show_essid=False)
 
 	def add_cell(self, cell):
-		self.cells[cell.mac] = copy.deepcopy(cell)
-		self.encryption		 = self.cells[cell.mac].encryption
-		self.crypto			 = self.cells[cell.mac].crypto
-		self.authentication	 = self.cells[cell.mac].authentication
-		self.group_cipher	 = self.cells[cell.mac].group_cipher
-		self.pair_cipher	 = self.cells[cell.mac].pair_cipher
+		if not exists(self.cells[cell.mac]):
+			self.cells[cell.mac] = copy.deepcopy(cell)
+			self.encryption		 = self.cells[cell.mac].encryption
+			self.crypto			 = self.cells[cell.mac].crypto
+			self.authentication	 = self.cells[cell.mac].authentication
+			self.group_cipher	 = self.cells[cell.mac].group_cipher
+			self.pair_cipher	 = self.cells[cell.mac].pair_cipher
+		else: # if the cell already exists we don't copy the crypto settings
+			self.cells[cell.mac] = copy.deepcopy(cell)
 
 class WifiInformation:
 	#cells	= {}
@@ -350,7 +353,6 @@ class WifiInformation:
 				current_cell.last_seen		= datetime.now()
 			current_cell.channel			= self.essids[current_cell.essid].cells[current_cell.mac].channel
 			current_cell.connected = True
-			#self.essids[current_cell.essid].cells[current_cell.mac] = current_cell
 			self.essids[current_cell.essid].add_cell(current_cell)
 
 			#stdout.write(str(current_cell.bitrate))
