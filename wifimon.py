@@ -15,12 +15,18 @@ from time import sleep
 import threading
 import Queue
 from getch.getch import getch
+import os
+import fileinput
 
 parser = argparse.ArgumentParser(description='google-doc-watcher')
 parser.add_argument('--verbose','-v', dest='verbose', action='count',
 					default=0)
 parser.add_argument('--device','-d', dest='wifiDevice',
 					default='wlan0')
+parser.add_argument('-n', dest='prettyprintEthers',
+					default=True, action='store_false')
+parser.add_argument('--ethers','-e', dest='ethersFile',
+					default=os.getenv("HOME")+"/.config/wifimon/ethers")
 parser.add_argument('--input','-i', dest='inputFromFile',
 					default=None)
 parser.add_argument('-cc', dest='col_crypto',	default=0x44bb44)
@@ -56,11 +62,21 @@ parser.add_argument('-up', dest='update_interval',	default=2)
 					#default=False)
 args = parser.parse_args()
 
+# conversion strings for crypt strings
 crypto_filter = {}
 crypto_filter ["IEEE 802.11i/WPA2 Version 1"] = "WPA2"
 crypto_filter ["WPA Version 1"] =				"WPA1"
 #crypto_filter [""] = "						"
 
+# Read ethermap
+try:
+	ethermap = {}
+	for line in fileinput.input(args.ethersFile):
+		entries = re.split('\s*', line)
+		key = entries[0]
+		ethermap[key] = ' '.join(entries[1:])
+except Exception as e:
+	print("Error: " + str(e))
 
 #startupCwd = os.getcwd()
 #os.chdir(args.basedir)
@@ -90,25 +106,35 @@ class wifiCell:
 		bg = 0x000000
 
 		col_mac		= args.col_mac
-		col_ch   	= args.col_ch
-		col_fr   	= args.col_fr
-		col_qu   	= args.col_qu
-		col_le   	= args.col_le
-		col_mo   	= args.col_mo
+		col_ch		= args.col_ch
+		col_fr		= args.col_fr
+		col_qu		= args.col_qu
+		col_le		= args.col_le
+		col_mo		= args.col_mo
 		col_meter	= args.col_meter
 		col_speed	= args.col_speed
 
 		if self.connected:
 			multiplier = 1
 			col_mac		= args.col_hi
-			col_ch   	= args.col_hi
-			col_fr   	= args.col_hi
-			col_qu   	= args.col_hi
-			col_le   	= args.col_hi
-			col_mo   	= args.col_hi
+			col_ch		= args.col_hi
+			col_fr		= args.col_hi
+			col_qu		= args.col_hi
+			col_le		= args.col_hi
+			col_mo		= args.col_hi
 			col_meter	= args.col_hi
 			col_speed	= args.col_hi
-		stdout.write('	%s' %	colorize(				self.mac,			int(multiplier*col_mac), bg=bg))
+
+		# preformatting: mac addresses:
+		formatted_mac = self.mac
+		if args.prettyprintEthers:
+			try:
+				formatted_mac = ethermap[self.mac]
+			except:
+				pass
+
+		#stdout.write('	%s' %	colorize(				self.mac,			int(multiplier*col_mac), bg=bg))
+		stdout.write('	%s' %	colorize("{:<17}".format(formatted_mac[:17]),	int(multiplier*col_mac), bg=bg))
 		stdout.write(' %s'	%	colorize("{:<3}".format(self.channel),		int(multiplier*col_ch), bg=bg))
 		stdout.write(' (%s)' %	colorize("{:<5}".format(self.frequency),	int(multiplier*col_fr), bg=bg))
 		stdout.write(' %s'	%	colorize("{:<5}".format(self.quality),		int(multiplier*col_qu), bg=bg))
@@ -165,6 +191,7 @@ class wifiEssid:
 		self.crypto		= ""
 
 	def display(self):
+		# preformatting: Crypto
 		temp = []
 		if self.encryption:
 			for i in range(len(self.crypto)):
@@ -174,16 +201,11 @@ class wifiEssid:
 						"/" + self.pair_cipher[i] + ")" )
 		else:
 			temp.append ("insecure")
-
 		encryption_string = " + ".join (temp)
-
 		for (k,v) in crypto_filter.items():
 			encryption_string = encryption_string.replace(k,v)
-
-
 		encryption_string = colorize("%s" % "["+encryption_string+"]", args.col_crypto)
-		#stdout.write(' %s'  % encryption_string)
-		#stdout.write(' %s'  % str(self.crypto))
+
 		stdout.write ("%s %s\n" % (colorize("%s" % self.essid, args.col_essid),\
 								encryption_string.rstrip()))
 		#for cell in self.cells.values():
@@ -213,7 +235,7 @@ class wifiEssid:
 			self.cells[cell.mac] = copy.deepcopy(cell)
 			self.encryption		 = self.cells[cell.mac].encryption
 			self.crypto			 = self.cells[cell.mac].crypto
-			self.authentication	 = self.cells[cell.mac].authentication
+			self.authentication  = self.cells[cell.mac].authentication
 			self.group_cipher	 = self.cells[cell.mac].group_cipher
 			self.pair_cipher	 = self.cells[cell.mac].pair_cipher
 		else: # if the cell already exists we don't copy the crypto settings
@@ -296,9 +318,9 @@ class WifiInformation:
 
 			if re.match("Encryption", line):
 				if re.search("on", line.split(":")[1]):
-					new_cell.encryption	= True
+					new_cell.encryption = True
 				else:
-					new_cell.encryption	= False
+					new_cell.encryption = False
 
 			if re.match("ESSID", line):
 				status_essid = line.split(":")[1].replace('"','')
@@ -344,7 +366,7 @@ class WifiInformation:
 
 
 				if re.match("Mode:", line):
-					current_cell.mode		= line.split(":")[1].split(" ")[0]
+					#current_cell.mode		= line.split(":")[1].split(" ")[0]
 					current_cell.frequency	= line.split(":")[2].split(" ")[0]
 					current_cell.mac		= line.split(" ")[7]
 				if re.match("Link Quality", line):
