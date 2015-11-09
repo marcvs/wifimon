@@ -126,6 +126,7 @@ class wifiCell:
 			col_speed	= args.col_hi
 
 		# preformatting: mac addresses:
+		# FIXME: asdfsdf 
 		formatted_mac = self.mac
 		if args.prettyprintEthers:
 			try:
