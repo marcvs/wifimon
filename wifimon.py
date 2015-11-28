@@ -234,11 +234,11 @@ class wifiEssid:
 		#if self.cells[cell.mac] in locals():
 		if not cell.mac in self.cells.iterkeys():
 			self.cells[cell.mac] = copy.deepcopy(cell)
-			self.encryption		 = self.cells[cell.mac].encryption
-			self.crypto			 = self.cells[cell.mac].crypto
+			self.encryption      = self.cells[cell.mac].encryption
+			self.crypto          = self.cells[cell.mac].crypto
 			self.authentication  = self.cells[cell.mac].authentication
-			self.group_cipher	 = self.cells[cell.mac].group_cipher
-			self.pair_cipher	 = self.cells[cell.mac].pair_cipher
+			self.group_cipher    = self.cells[cell.mac].group_cipher
+			self.pair_cipher     = self.cells[cell.mac].pair_cipher
 		else: # if the cell already exists we don't copy the crypto settings
 			self.cells[cell.mac] = copy.deepcopy(cell)
 
@@ -351,7 +351,7 @@ class WifiInformation:
 		# at the end of the for loop we also have to add the last cell
 		if status_cell != status_last_cell:
 			if not self.essids.has_key (status_essid):
-				self.essids[status_essid] = wifiEssid()
+				self.essids[status_essid]   = wifiEssid()
 			self.essids[status_essid].essid = status_essid
 			self.essids[status_essid].add_cell(new_cell)
 
@@ -401,10 +401,10 @@ class InputThread(threading.Thread):#{{{
 	def __init__(self, queue):
 		threading.Thread.__init__(self)
 		self.queue = queue
-		self.name = "Keyboard Input Thread"
+		self.name  = "Keyboard Input Thread"
 	def run(self):
 		while True:
-			kbd_chr = getch()
+			kbd_chr     = getch()
 			try:
 				kbd_val = ord(kbd_chr)
 			except:
