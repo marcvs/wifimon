@@ -175,6 +175,9 @@ class wifiCell:
 		stdout.flush()
 #, self.last_seen 
 	def display_long(self, show_essid=True):
+		# for (k,v) in crypto_filter.items():
+			# encryption_string = encryption_string.replace(k,v)
+		
 		print ('''		  %s:
 		 Channel:	 %s (%s GHz)
 		 Quality:	 %s (%s dBm)
@@ -246,7 +249,7 @@ class WifiInformation:
 	#cells	= {}
 	essids = {}
 
-	def shellcall(self, commandline):
+	def shellcall(self, commandline):# {{{
 		tmpout = "/tmp/shellcall-"+os.getpid().__str__()+"out"
 		tmperr = "/tmp/shellcall-"+os.getpid().__str__()+"err"
 
@@ -261,8 +264,8 @@ class WifiInformation:
 			os.remove (tmperr)
 
 		return retval, output, errors
-
-	def update(self):
+# }}}
+	def update(self):# {{{
 		# Gather input for the currently connected AP
 		current_cell = wifiCell()
 		try:
@@ -385,17 +388,15 @@ class WifiInformation:
 			#current_cell.display(show_essid=False)
 		except Exception, e:
 			print (str(e))
-
-
-
-
+	# }}}	
+# {{{
 	def display(self):
 		#print ("Cells")
 		#for mac in self.cells.iterkeys():
 			#self.cells[mac].display()
 
 		for essid in self.essids.iterkeys():
-			self.essids[essid].display()
+			self.essids[essid].display()# }}}
 
 class InputThread(threading.Thread):#{{{
 	def __init__(self, queue):
