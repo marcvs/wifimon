@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 '''main entry point'''
 
 #vim: foldmethod=indent
@@ -7,6 +8,11 @@
 #
 # pylint: disable=invalid-name, superfluous-parens
 # pylint: disable=logging-not-lazy, logging-format-interpolation
+
+import logging
+from wifitop.parse_args import args
+
+logger = logging.getLogger(__name__)
 
 def main():
     '''Main Config'''
