@@ -2,3 +2,6 @@ aliases
 test.py
 *pyc
 samples
+log_file
+alchemy.db
+wifitop.db
