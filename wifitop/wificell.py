@@ -14,12 +14,36 @@ from xtermcolor import colorize
 from wifitop.parse_args import args
 from wifitop.helpers import pretty_print_ether
 import wifitop.logsetup
+import wifitop.alchemy as alchemy
+from sqlalchemy import Column, Integer, String, Boolean, JSON
+
 
 logger = logging.getLogger(__name__)
 
-class WifiCell:
+class WifiCell(alchemy.Base):
     # pylint: disable=too-many-instance-attributes
     '''encapsulate wifi cell information'''
+    __tablename__      = "wificell"
+    # id                 = Column(Integer, primary_key=True)
+    # id                 = Column(Integer)
+    mac                = Column(String, primary_key=True)
+    channel            = Column(Integer)
+    frequency          = Column(Integer)
+    quality            = Column(Integer)
+    level              = Column(Integer)
+    encryption         = Column(Boolean)
+    encryption_type    = Column(String)
+    essid              = Column(String)
+    bitrates           = Column(String)
+    bitrate            = Column(String)
+    txpower            = Column(String)
+    mode               = Column(String)
+    last_seen          = Column(String)
+    crypto             = Column(JSON)
+    authentication     = Column(JSON)
+    group_cipher       = Column(JSON)
+    pair_cipher        = Column(JSON)
+    connected          = Column(Boolean)
     def __init__(self):
         self.mac                = ""
         self.channel            = 0
@@ -135,15 +159,18 @@ class WifiCell:
 
     def display_long(self, show_essid=True):
         '''pretty print'''
+        output = ""
         # for (k,v) in crypto_filter.items():
-            # encryption_string = encryption_string.replace(k,v)
+        # encryption_string = encryption_string.replace(k,v)
 
-        print ('''        %s:
-         Channel:    %s (%s GHz)
-         Quality:    %s (%s dBm)
-         Encryption: %s''' % (self.mac, self.channel, self.frequency,
-                            self.quality, self.level, self.encryption))
+        output += '''        %s:
+        Channel:    %s (%s GHz)
+        Quality:    %s (%s dBm)
+        Encryption: %s''' % (self.mac, self.channel, self.frequency,
+                 self.quality, self.level, self.encryption)
         if show_essid:
-            print ('''       ESSID:      %s''' % self.essid)
-        print ('''       Mode:       %s''' % self.mode)
-        print ('''       Last Seen:  %s''' % self.last_seen )
+            output += '''       ESSID:      %s''' % self.essid
+        output += '''       Mode:       %s''' % self.mode
+        output += '''       Last Seen:  %s''' % self.last_seen 
+        return output
+alchemy.Base.metadata.create_all(alchemy.engine)
