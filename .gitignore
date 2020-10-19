@@ -5,3 +5,4 @@ samples
 log_file
 alchemy.db
 wifitop.db
+test-alchemy.py
