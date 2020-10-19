@@ -16,6 +16,7 @@ from wifitop.parse_args import args
 from wifitop.wificell import WifiCell
 from wifitop.helpers import crypto_filter
 import wifitop.logsetup
+import wifitop.alchemy as alchemy
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,7 @@ class WifiEssid:
         # preformatting: Crypto
         output = ""
         temp = []
+        # print (F" Crypto: {self.crypto}")
         if self.encryption:
             for i in range(len(self.crypto)):
                 temp.append (self.crypto[i] + \
@@ -64,4 +66,6 @@ class WifiEssid:
             self.pair_cipher     = self.cells[cell.mac].pair_cipher
         else: # if the cell already exists we don't copy the crypto settings
             self.cells[cell.mac] = copy.deepcopy(cell)
-
+        # alchemy.session.add(cell)
+        # print(alchemy.session.dirty)
+        # alchemy.session.commit()
