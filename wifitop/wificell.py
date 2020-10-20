@@ -32,7 +32,7 @@ class WifiCell(alchemy.Base):
     quality            = Column(Integer)
     level              = Column(Integer)
     encryption         = Column(Boolean)
-    encryption_type    = Column(String)
+    # encryption_type    = Column(String)
     essid              = Column(String)
     bitrates           = Column(String)
     bitrate            = Column(String)
@@ -44,25 +44,84 @@ class WifiCell(alchemy.Base):
     group_cipher       = Column(JSON)
     pair_cipher        = Column(JSON)
     connected          = Column(Boolean)
-    def __init__(self):
-        self.mac                = ""
-        self.channel            = 0
-        self.frequency          = 0
-        self.quality            = 0
-        self.level              = 0
-        self.encryption         = False
-        self.encryption_type    = ""
-        self.essid              = ""
-        self.bitrates           = ""
-        self.bitrate            = ""
-        self.txpower            = ""
-        self.mode               = ""
-        self.last_seen          = ""
-        self.crypto             = []
-        self.authentication     = []
-        self.group_cipher       = []
-        self.pair_cipher        = []
-        self.connected          = False
+    def __init__(self, cellinfo = None):
+        if cellinfo is not None:
+            self.update(cellinfo)
+
+    def update (self, cellinfo):
+        '''Update the cell'''
+        try:
+            self.mac                = cellinfo["mac"]
+        except KeyError:
+            raise
+        try:
+            self.channel            = cellinfo["channel"]
+        except KeyError:
+            self.channel            = 0
+        try:
+            self.frequency          = cellinfo["frequency"]
+        except KeyError:
+            self.frequency          = 0
+        try:
+            self.quality            = cellinfo["quality"]
+        except KeyError:
+            self.quality            = 0
+        try:
+            self.level              = cellinfo["level"]
+        except KeyError:
+            self.level              = 0
+        try:
+            self.encryption         = cellinfo["encryption"]
+        except KeyError:
+            self.encryption         = False
+        try:
+            self.encryption_type    = cellinfo["encryption_type"]
+        except KeyError:
+            self.encryption_type    = ""
+        try:
+            self.essid              = cellinfo["essid"]
+        except KeyError:
+            raise
+        try:
+            self.bitrates           = cellinfo["bitrates"]
+        except KeyError:
+            self.bitrates           = ""
+        try:
+            self.bitrate            = cellinfo["bitrate"]
+        except KeyError:
+            self.bitrate            = ""
+        try:
+            self.txpower            = cellinfo["txpower"]
+        except KeyError:
+            self.txpower            = ""
+        try:
+            self.mode               = cellinfo["mode"]
+        except KeyError:
+            self.mode               = ""
+        try:
+            self.last_seen          = cellinfo["last_seen"]
+        except KeyError:
+            self.last_seen          = 0
+        try:
+            self.crypto             = cellinfo["crypto"]
+        except KeyError:
+            self.crypto             = []
+        try:
+            self.authentication     = cellinfo["authentication"]
+        except KeyError:
+            self.authentication     = []
+        try:
+            self.group_cipher       = cellinfo["group_cipher"]
+        except KeyError:
+            self.group_cipher       = []
+        try:
+            self.pair_cipher        = cellinfo["pair_cipher"]
+        except KeyError:
+            self.pair_cipher        = []
+        try:
+            self.connected          = cellinfo["connected"]
+        except KeyError:
+            self.connected          = False
 
     def display(self, show_essid=True):
         # pylint: disable=too-many-locals
@@ -82,7 +141,7 @@ class WifiCell(alchemy.Base):
         col_mo      = args.col_mo
         col_meter   = args.col_meter
         col_speed   = args.col_speed
-        col_last    = args.col_last 
+        col_last    = args.col_last
 
         # print (F" connected: {self.connected}")
 
@@ -117,7 +176,10 @@ class WifiCell(alchemy.Base):
                 col_last, bg=bg)
             return output
 
-        output += ' %s'  %  colorize("{:<3}".format(self.channel),   col_ch, bg=bg)
+        if self.channel != 0:
+            output += ' %s'  %  colorize("{:<3}".format(self.channel),   col_ch, bg=bg)
+        else:
+            output += ' %s'  %  "   "
         output += ' (%s)' % colorize("{:<5}".format(self.frequency), col_fr, bg=bg)
         output += ' %s'  %  colorize("{:<5}".format(self.quality),   col_qu, bg=bg)
         output += ' (%s)' % colorize("{:<3}".format(self.level),     col_le, bg=bg)

@@ -32,15 +32,25 @@ wifiInfo = WifiInformation()
 # for i in range(0,10):
 print ("Collecting data......")
 while True:
+    info = ''
     try:
-        wifiInfo.update()
-        info = wifiInfo.display()
+        wifiInfo.update_cells()
+        wifiInfo.update_connected_cell()
+        essids = wifiInfo.extract_essids()
+        # info = wifiInfo.display()
+        for essid in essids.values():
+            info += essid.display()
+
+
         if not args.once:
             os.system('clear')
+
         print (info)
+        print (wifiInfo.dupefinder())
+            
         if args.once:
             sys.exit(0)
-        sleep(2)
+        sleep(0.5)
     except KeyboardInterrupt:
         print ("\n\nTschö!\n")
         sys.exit(0)

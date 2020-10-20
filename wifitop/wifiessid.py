@@ -8,7 +8,6 @@
 # pylint: disable=logging-not-lazy, logging-format-interpolation
 
 import logging
-import copy
 import operator
 from xtermcolor import colorize
 
@@ -22,7 +21,8 @@ logger = logging.getLogger(__name__)
 
 class WifiEssid:
     '''collect wifi cells with the same essid'''
-    def __init__(self):
+    def __init__(self, essid=None):
+        self.essid  = essid
         self.cells      = {} # dict: maps mac to cell
         self.encryption = False
         self.crypto     = ""
@@ -58,14 +58,14 @@ class WifiEssid:
 
     def add_cell(self, cell):
         if not cell.mac in self.cells.keys():
-            self.cells[cell.mac] = copy.deepcopy(cell)
+            self.cells[cell.mac] = cell
             self.encryption      = self.cells[cell.mac].encryption
             self.crypto          = self.cells[cell.mac].crypto
             self.authentication  = self.cells[cell.mac].authentication
             self.group_cipher    = self.cells[cell.mac].group_cipher
             self.pair_cipher     = self.cells[cell.mac].pair_cipher
         else: # if the cell already exists we don't copy the crypto settings
-            self.cells[cell.mac] = copy.deepcopy(cell)
+            self.cells[cell.mac] = cell
         # alchemy.session.add(cell)
         # print(alchemy.session.dirty)
         # alchemy.session.commit()
