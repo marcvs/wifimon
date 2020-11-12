@@ -23,6 +23,7 @@ crypto_filter = {}
 crypto_filter ["IEEE 802.11i/WPA2 Version 1"] = "WPA2"
 crypto_filter ["WPA Version 1"] =               "WPA1"
 #crypto_filter [""] = "                     "
+ethermap = {}
 
 def jprint(jsondata, do_print=True):
     '''json printer'''
@@ -54,7 +55,6 @@ def shellcall(commandline):
 def read_ethermap(ethersFile):
     '''Read ethermap'''
     try:
-        ethermap = {}
         with fileinput.input(ethersFile) as lines:
             for line in lines:
                 entries = re.split(' ', line)
@@ -70,9 +70,10 @@ def read_ethermap(ethersFile):
 def pretty_print_ether(mac):
     '''translate mac into known name from config file'''
     if args.prettyprintEthers:
-        ethermap = read_ethermap(args.ethersFile)
         try:
             mac = ethermap[mac]
         except KeyError:
             pass
     return mac
+
+ethermap = read_ethermap(args.ethersFile)

@@ -5,14 +5,14 @@
 # This code is distributed under the MIT License
 #
 # pylint: disable=invalid-name, superfluous-parens
-# pylint: disable=logging-not-lazy, logging-format-interpolation
+# pylint: disable=logging-not-lazy, logging-format-interpolation, logging-fstring-interpolation
 
 import logging
 import re
 from datetime import datetime
 
 from wifitop.parse_args import args
-from wifitop.helpers import shellcall
+from wifitop.helpers import shellcall, pretty_print_ether
 from wifitop.wifiessid import WifiEssid
 from wifitop.wificell import WifiCell
 import wifitop.logsetup
@@ -170,33 +170,40 @@ class WifiInformation:
             raise
     def extract_essids(self):
         '''return a dictionary of essids'''
+        macs = []
         essids = {}
         for cell in self.cells.values():
             if cell.essid not in essids.keys():
                 essids[cell.essid] = WifiEssid(cell.essid)
             essids[cell.essid].add_cell(cell)
+            # Dupefinder:
+            mac = cell.mac
+            if mac in macs:
+                # logger.info(F"mac: {mac}")
+                pretty_mac = pretty_print_ether(mac)
+                other_cell = self.cells[mac]
+                other_pretty_mac = pretty_print_ether(other_cell.mac)
+                other_cid = other_cell.cid
+                # logger.info( F"  ExtractEssids: Duplicate found: {self.cells[mac].cid}: {mac}")
+                logger.info( F"Dupe: {self.cells[mac].cid}-{pretty_mac:10} -- {other_pretty_mac:10}-{other_cid}")
+            macs.append(mac)
+
         counter = 0
         for e in essids.values():
             for c in e.cells.values():
                 counter += 1
-        print (F"      essids: {counter}")
-        from time import sleep
-        sleep(2)
-            
-        return essids
+        # logger.info(F"  ExtractEssids: essids: {counter}")
+
+        return (essids, counter)
 
     def dupefinder(self):
         '''Find duplicate entries'''
-        output=""
         macs = []
         for mac in self.cells.keys():
             if mac in macs:
-                print (F"mac: {mac}")
-                output += F"Duplicate found: {mac}"
+                logger.info (F"Duplicate found: {self.cells[mac].cid}: {mac}")
             macs.append(mac)
-        if output == "":
-            output = F"No Dupes, total: {len(self.cells)}"
-        return output
+        return len(self.cells)
 
 
     def display(self):

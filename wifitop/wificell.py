@@ -10,6 +10,7 @@
 import logging
 from datetime import datetime
 from xtermcolor import colorize
+from itertools import count
 
 from wifitop.parse_args import args
 from wifitop.helpers import pretty_print_ether
@@ -26,6 +27,7 @@ class WifiCell(alchemy.Base):
     __tablename__      = "wificell"
     # id                 = Column(Integer, primary_key=True)
     # id                 = Column(Integer)
+    _ids                 = count(0)
     mac                = Column(String, primary_key=True)
     channel            = Column(Integer)
     frequency          = Column(Integer)
@@ -45,6 +47,7 @@ class WifiCell(alchemy.Base):
     pair_cipher        = Column(JSON)
     connected          = Column(Boolean)
     def __init__(self, cellinfo = None):
+        self.cid = next(self._ids)
         if cellinfo is not None:
             self.update(cellinfo)
 
@@ -168,9 +171,10 @@ class WifiCell(alchemy.Base):
             col_last    = args.col_hi
 
         # preformatting: mac addresses:
-        self.mac = pretty_print_ether(self.mac)
+        pretty_mac = pretty_print_ether(self.mac)
 
-        output += '  %s' %  colorize("{:<17}".format(self.mac[:17]), col_mac, bg=bg)
+        output += F"{self.cid:2} - "
+        output += '  %s' %  colorize("{:<17}".format(pretty_mac[:17]), col_mac, bg=bg)
         if age > 40:
             output += colorize (F" --------------------------------[ expired: {age:2.0f}s ] \n",
                 col_last, bg=bg)
@@ -225,10 +229,12 @@ class WifiCell(alchemy.Base):
         # for (k,v) in crypto_filter.items():
         # encryption_string = encryption_string.replace(k,v)
 
+        pretty_mac = pretty_print_ether(self.mac)
+
         output += '''        %s:
         Channel:    %s (%s GHz)
         Quality:    %s (%s dBm)
-        Encryption: %s''' % (self.mac, self.channel, self.frequency,
+        Encryption: %s''' % (pretty_mac, self.channel, self.frequency,
                  self.quality, self.level, self.encryption)
         if show_essid:
             output += '''       ESSID:      %s''' % self.essid
