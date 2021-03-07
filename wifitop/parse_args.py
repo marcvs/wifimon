@@ -24,6 +24,8 @@ def parseOptions():
     parser.add_argument('-n', dest='prettyprintEthers',         default=True, action='store_false')
     parser.add_argument('--ethers','-e', dest='ethersFile',     
                                                 default=os.getenv("HOME")+"/.config/wifimon/ethers")
+    parser.add_argument('--oui','-o', dest='ouiFile',     
+                                                default=os.getenv("HOME")+"/.config/wifimon/oui.processed")
     parser.add_argument('-cc', dest='col_crypto',               default=0x44bb44)
     parser.add_argument('-ce', dest='col_essid',                default=0x00ff00)
     parser.add_argument('-cm', dest='col_mac',                  default=0x66ff66)
