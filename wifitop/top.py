@@ -10,6 +10,8 @@
 # pylint: disable=logging-not-lazy, logging-format-interpolation
 
 import logging
+import re
+import sys
 from wifitop.parse_args import args
 
 logger = logging.getLogger(__name__)
@@ -36,7 +38,15 @@ def main():
         raise(e)
     return (0)
 
+
+mystring = "   tlink"
+newstring = re.sub("^ *", "x", mystring)
+print(F" <{mystring}> - <{newstring}>")
+
+sys.exit(0)
+
 if __name__ == '__main__':
     # Run the app
     main()
+
 
