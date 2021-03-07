@@ -24,6 +24,7 @@ crypto_filter ["IEEE 802.11i/WPA2 Version 1"] = "WPA2"
 crypto_filter ["WPA Version 1"] =               "WPA1"
 #crypto_filter [""] = "                     "
 ethermap = {}
+ouimap = {}
 
 def jprint(jsondata, do_print=True):
     '''json printer'''
@@ -52,6 +53,24 @@ def shellcall(commandline):
 
     return retval, output, errors
 
+def read_ouimap(ouiFile):
+    '''Read ouimap'''
+    try:
+        with fileinput.input(ouiFile) as lines:
+            for line in lines:
+                entries = re.split(' ', line)
+                key = entries[0]
+                entries[-1] = entries[-1].rstrip("\n")
+                vendor = ' '.join(entries[1:])
+                vendor = re.sub('^\s*', '', vendor)
+                vendor = " ".join(vendor.split(' ')[0:1])
+                ouimap[key] = vendor
+    except IOError as e:
+        print("Error reading ouimap: " + str(e))
+        sys.exit(1)
+        return None
+    return ouimap
+
 def read_ethermap(ethersFile):
     '''Read ethermap'''
     try:
@@ -69,6 +88,15 @@ def read_ethermap(ethersFile):
 
 def pretty_print_ether(mac):
     '''translate mac into known name from config file'''
+    try:
+        oui = ":".join(mac.split(':')[0:3])
+        vendor = ouimap[oui]
+        # logger.info(F"  mac: {mac} - OUI: >{oui}< - VEN: >{vendor}<")
+        retval = F"{vendor[0:8]:8} {':'.join(mac.split(':')[3:6])}"
+        # logger.info(F"vendor + mac: {retval}")
+        return retval
+    except KeyError:
+        pass
     if args.prettyprintEthers:
         try:
             mac = ethermap[mac]
@@ -77,3 +105,4 @@ def pretty_print_ether(mac):
     return mac
 
 ethermap = read_ethermap(args.ethersFile)
+ouimap   = read_ouimap(args.ouiFile)
