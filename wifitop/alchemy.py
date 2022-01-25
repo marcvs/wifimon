@@ -1,4 +1,4 @@
-'''information about one cell'''
+"""information about one cell"""
 
 # vim: foldmethod=indent : tw=100
 #
@@ -12,14 +12,16 @@ import logging
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import Column, Integer, String
 
 import wifitop.logsetup
 
-logger  = logging.getLogger(__name__)
+# from sqlalchemy import Column, Integer, String
 
-engine  = create_engine('sqlite:///wifitop.db', echo = True)
-Session = sessionmaker(bind = engine)
+
+logger = logging.getLogger(__name__)
+
+engine = create_engine("sqlite:///wifitop.db", echo=True)
+Session = sessionmaker(bind=engine)
 session = Session()
 
-Base    = declarative_base()
+Base = declarative_base()
