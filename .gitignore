@@ -7,3 +7,10 @@ alchemy.db
 wifitop.db
 test-alchemy.py
 oui.processed
+*.egg-info
+sample*
+.tox
+log*
+oui*
+ChangeLog
+AUTHORS
