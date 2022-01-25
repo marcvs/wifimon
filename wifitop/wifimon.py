@@ -8,7 +8,6 @@
 # pylint: disable=invalid-name, superfluous-parens
 # pylint: disable=logging-not-lazy, logging-format-interpolation
 
-import os
 import sys
 import logging
 from time import sleep
@@ -45,12 +44,16 @@ while True:
         for cell in wifiInfo.cells.values():
             info += cell.display(show_essid=False)
 
-        if not args.once:
-            os.system('clear')
+        # if not args.once:
+        #     os.system('clear')
+        print("\n\n--------------------------------------------------")
 
         df_cellnum = wifiInfo.dupefinder()
         print (info)
-        logger.info(F"ee: {ee_cellnum} -- tot: {df_cellnum} here: {len(wifiInfo.cells)}")
+        try:
+            logger.info(F"ee: {ee_cellnum} -- tot: {df_cellnum} here: {len(wifiInfo.cells)}")
+        except NameError:
+            logger.info(F"-- tot: {df_cellnum} here: {len(wifiInfo.cells)}")
 
         if args.once:
             sys.exit(0)

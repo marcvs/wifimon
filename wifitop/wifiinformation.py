@@ -9,6 +9,7 @@
 
 import logging
 import re
+import os.path
 from datetime import datetime
 
 from wifitop.parse_args import args
@@ -24,11 +25,25 @@ class WifiInformation:
     def __init__(self):
         # self.essids = {} # dict: maps string to WifiEssid
         self.cells = {} # dict: maps mac to WifiCell
+        self.counter = 0
 
     def update_cells(self):
         '''update cells from iwclist'''
-        (_, iwlistOutput, _) = shellcall("ifconfig "+args.wifiDevice+" up")
-        (_, iwlistOutput, _) = shellcall("iwlist "+args.wifiDevice+" scan")
+        if args.fake_input:
+            from time import sleep
+            filename = args.fake_input+str(self.counter)
+            if not os.path.isfile(filename):
+                self.counter = 0
+                filename = args.fake_input+str(self.counter)
+            file    = open(filename, mode = 'r')
+            iwlistOutput = file.read()
+            file.close()
+            self.counter += 1
+            logger.debug(F"loaded from {filename}")
+            # sleep (3)
+        else:
+            (_, iwlistOutput, _) = shellcall("ifconfig "+args.wifiDevice+" up")
+            (_, iwlistOutput, _) = shellcall("iwlist "+args.wifiDevice+" scan")
 
         mac                        = ""
         last_mac                   = ""
@@ -175,6 +190,7 @@ class WifiInformation:
         for cell in self.cells.values():
             if cell.essid not in essids.keys():
                 essids[cell.essid] = WifiEssid(cell.essid)
+                # logger.debug(F"added essid: {cell.essid}")
             essids[cell.essid].add_cell(cell)
             # Dupefinder:
             mac = cell.mac
@@ -185,8 +201,13 @@ class WifiInformation:
                 other_pretty_mac = pretty_print_ether(other_cell.mac)
                 other_cid = other_cell.cid
                 # logger.info( F"  ExtractEssids: Duplicate found: {self.cells[mac].cid}: {mac}")
-                logger.info( F"Dupe: {self.cells[mac].cid}-{pretty_mac:10} -- {other_pretty_mac:10}-{other_cid}")
+                # logger.info( F"Dupe: {self.cells[mac].cid}-{pretty_mac:10} -- {other_pretty_mac:10}-{other_cid}")
+                logger.info( F"Dupe: {self.cells[mac].cid}-{mac:10} -- {other_cell.mac:10}-{other_cid}")
+                NL='\n'
+                logger.info(F"one:   {cell.display().rstrip(NL)}")
+                logger.info(F"other: {self.cells[mac].display().rstrip(NL)}")
             macs.append(mac)
+            # logger.debug(F"len of macs{len(macs)}")
 
         counter = 0
         for e in essids.values():
