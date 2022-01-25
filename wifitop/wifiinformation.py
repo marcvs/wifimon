@@ -1,4 +1,4 @@
-'''informatin about many essids'''
+"""informatin about many essids"""
 
 # vim: foldmethod=indent : tw=100
 #
@@ -20,49 +20,52 @@ import wifitop.logsetup
 
 logger = logging.getLogger(__name__)
 
+
 class WifiInformation:
-    '''collect and updates wifi essids'''
+    """collect and updates wifi essids"""
+
     def __init__(self):
         # self.essids = {} # dict: maps string to WifiEssid
-        self.cells = {} # dict: maps mac to WifiCell
+        self.cells = {}  # dict: maps mac to WifiCell
         self.counter = 0
 
     def update_cells(self):
-        '''update cells from iwclist'''
+        """update cells from iwclist"""
         if args.fake_input:
             from time import sleep
-            filename = args.fake_input+str(self.counter)
+
+            filename = args.fake_input + str(self.counter)
             if not os.path.isfile(filename):
                 self.counter = 0
-                filename = args.fake_input+str(self.counter)
-            file    = open(filename, mode = 'r')
+                filename = args.fake_input + str(self.counter)
+            file = open(filename, mode="r")
             iwlistOutput = file.read()
             file.close()
             self.counter += 1
-            logger.debug(F"loaded from {filename}")
+            logger.debug(f"loaded from {filename}")
             # sleep (3)
         else:
-            (_, iwlistOutput, _) = shellcall("ifconfig "+args.wifiDevice+" up")
-            (_, iwlistOutput, _) = shellcall("iwlist "+args.wifiDevice+" scan")
+            (_, iwlistOutput, _) = shellcall("ifconfig " + args.wifiDevice + " up")
+            (_, iwlistOutput, _) = shellcall("iwlist " + args.wifiDevice + " scan")
 
-        mac                        = ""
-        last_mac                   = ""
-        cellinfo                   = {}
-        cellinfo["crypto"]         = []
-        cellinfo["group_cipher"]   = []
-        cellinfo["pair_cipher"]    = []
+        mac = ""
+        last_mac = ""
+        cellinfo = {}
+        cellinfo["crypto"] = []
+        cellinfo["group_cipher"] = []
+        cellinfo["pair_cipher"] = []
         cellinfo["authentication"] = []
         for line in iwlistOutput.split("\n"):
             if args.verbose > 1:
                 # print (F" len crypto: {len(cellinfo['crypto'])}")
-                print (line)
+                print(line)
             line = line.rstrip().lstrip()
-            if re.match("Cell", line): # a new cell is starting
+            if re.match("Cell", line):  # a new cell is starting
                 f = line.split(" ")
                 (cell, number, dash, _, next_mac) = (f[0], f[1], f[2], f[3], f[4])
                 # cycle the info:
                 last_mac = mac
-                mac      = next_mac
+                mac = next_mac
                 # if there was a previous cell, that one is finished now
                 # and we can add that one to it's coresponding essid
                 if last_mac not in (mac, ""):
@@ -72,27 +75,27 @@ class WifiInformation:
                     else:
                         self.cells[mac].update(cellinfo)
                     # And reset some values:
-                    cellinfo["crypto"]         = []
-                    cellinfo["group_cipher"]   = []
-                    cellinfo["pair_cipher"]    = []
+                    cellinfo["crypto"] = []
+                    cellinfo["group_cipher"] = []
+                    cellinfo["pair_cipher"] = []
                     cellinfo["authentication"] = []
 
-                            
                 # prepare for the next cell
                 # new_cell = WifiCell()
                 cellinfo["mac"] = mac
                 # new_cell.last_seen = datetime.now()
                 cellinfo["last_seen"] = datetime.now()
+                logger.debug(F"setting last seen for {cellinfo['mac']}: {datetime.now()}")
 
             if re.match("Channel", line):
-                cellinfo["channel"]    = line.split(":")[1]
+                cellinfo["channel"] = line.split(":")[1]
 
             if re.match("Frequency", line):
-                cellinfo["frequency"]  = line.split(":")[1].split(" ")[0]
+                cellinfo["frequency"] = line.split(":")[1].split(" ")[0]
 
             if re.match("Quality", line):
-                cellinfo["quality"]    = int(line.split("=")[1].split(" ")[0].split("/")[0])
-                cellinfo["level"]      = int(line.split(" ")[3].split("=")[1])
+                cellinfo["quality"] = int(line.split("=")[1].split(" ")[0].split("/")[0])
+                cellinfo["level"] = int(line.split(" ")[3].split("=")[1])
 
             if re.match("Encryption", line):
                 if re.search("on", line.split(":")[1]):
@@ -101,15 +104,15 @@ class WifiInformation:
                     cellinfo["encryption"] = False
 
             if re.match("ESSID", line):
-                cellinfo["essid"] = line.split(":")[1].replace('"','')
+                cellinfo["essid"] = line.split(":")[1].replace('"', "")
                 # status_essid = line.split(":")[1].replace('"','')
                 # new_cell.essid = status_essid
 
-            #if re.match("Bit Rates", line): # too complicated to parse for now
-                #new_cell.channel = line.split(":")[1].split(" ")[0]
+            # if re.match("Bit Rates", line): # too complicated to parse for now
+            # new_cell.channel = line.split(":")[1].split(" ")[0]
 
             if re.match("Mode", line):
-                cellinfo["mode"]               = line.split(":")[1]
+                cellinfo["mode"] = line.split(":")[1]
 
             if not re.match("IE: Unknown", line):
                 if re.match("IE: ", line):
@@ -132,48 +135,59 @@ class WifiInformation:
         # at the end of the for loop we also have to add the last cell
         if mac != last_mac:
             if mac not in self.cells.keys():
-                self.cells[mac] = WifiCell (cellinfo)
+                self.cells[mac] = WifiCell(cellinfo)
+            # FIXME: In case there is only one AP it's never updated.
+            #   => Text it with two APs
+            # else:
+            #     self.cells[mac] = WifiCell(cellinfo)
             # if status_essid not in self.essids.keys():
             #     self.essids[status_essid]   = WifiEssid()
             # self.essids[status_essid].essid = status_essid
             # self.essids[status_essid].add_cell(new_cell)
 
         # Gather input for the currently connected AP
+
     def update_connected_cell(self):
-        '''Update information from currently connected cell'''
+        """Update information from currently connected cell"""
         cellinfo = {}
         # cellinfo["crypto"]         = []
         # cellinfo["group_cipher"]   = []
         # cellinfo["pair_cipher"]    = []
         # cellinfo["authentication"] = []
-        try:
-            (_, iwcfgOutput, _) = shellcall("iwconfig "+args.wifiDevice)
-        except Exception as e:
-            print ("Exception in shellcall")
-            print (str(e))
+        iwcfgOutput = str()
+        if args.fake_input_iw:
+            file = open(args.fake_input_iw, mode="r")
+            iwcfgOutput = file.read()
+            file.close()
+        else:
+            try:
+                (_, iwcfgOutput, _) = shellcall("iwconfig " + args.wifiDevice)
+            except Exception as e:
+                print("Exception in shellcall")
+                print(str(e))
         try:
             # current_cell.__init__()
+            mac = str()
             for line in iwcfgOutput.split("\n"):
                 # print(line)
                 line = line.rstrip().lstrip()
                 if re.match(args.wifiDevice, line):
-                    cellinfo["essid"]      = line.split(":")[1].replace('"','')
-
+                    cellinfo["essid"] = line.split(":")[1].replace('"', "")
 
                 if re.match("Mode:", line):
-                    #current_cell.mode             = line.split(":")[1].split(" ")[0]
-                    cellinfo["frequency"]          = line.split(":")[2].split(" ")[0]
-                    mac                            = line.split(" ")[7]
-                    cellinfo["mac"]                = mac
+                    # current_cell.mode             = line.split(":")[1].split(" ")[0]
+                    cellinfo["frequency"] = line.split(":")[2].split(" ")[0]
+                    mac = line.split(" ")[7]
+                    cellinfo["mac"] = mac
                 if re.match("Link Quality", line):
-                    cellinfo["quality"]            = int(line.split("=")[1].split(" ")[0].split("/")[0])
-                    cellinfo["level"]              = int(line.split("=")[2].split(" ")[0])
+                    cellinfo["quality"] = int(line.split("=")[1].split(" ")[0].split("/")[0])
+                    cellinfo["level"] = int(line.split("=")[2].split(" ")[0])
                 if re.match("Bit Rate", line):
-                    cellinfo["bitrate"]            = line.split("=")[1].split(" ")[0]
-                    cellinfo["txpower"]            = line.split("=")[2].split(" ")[0]
-                cellinfo["last_seen"]              = datetime.now()
+                    cellinfo["bitrate"] = line.split("=")[1].split(" ")[0]
+                    cellinfo["txpower"] = line.split("=")[2].split(" ")[0]
+                cellinfo["last_seen"] = datetime.now()
             # cellinfo["channel"]                    = self.essids[current_cell.essid].cells[current_cell.mac].channel
-            cellinfo["connected"]                  = True
+            cellinfo["connected"] = True
             # update the cell with cellinfo:
             if mac not in self.cells.keys():
                 self.cells[mac] = WifiCell(cellinfo)
@@ -181,10 +195,11 @@ class WifiInformation:
                 self.cells[mac].update(cellinfo)
 
         except KeyError as e:
-            print (F"KeyError: {e}")
+            print(f"KeyError: {e}")
             raise
+
     def extract_essids(self):
-        '''return a dictionary of essids'''
+        """return a dictionary of essids"""
         macs = []
         essids = {}
         for cell in self.cells.values():
@@ -202,10 +217,12 @@ class WifiInformation:
                 other_cid = other_cell.cid
                 # logger.info( F"  ExtractEssids: Duplicate found: {self.cells[mac].cid}: {mac}")
                 # logger.info( F"Dupe: {self.cells[mac].cid}-{pretty_mac:10} -- {other_pretty_mac:10}-{other_cid}")
-                logger.info( F"Dupe: {self.cells[mac].cid}-{mac:10} -- {other_cell.mac:10}-{other_cid}")
-                NL='\n'
-                logger.info(F"one:   {cell.display().rstrip(NL)}")
-                logger.info(F"other: {self.cells[mac].display().rstrip(NL)}")
+                logger.info(
+                    f"Dupe: {self.cells[mac].cid}-{mac:10} -- {other_cell.mac:10}-{other_cid}"
+                )
+                NL = "\n"
+                logger.info(f"one:   {cell.display().rstrip(NL)}")
+                logger.info(f"other: {self.cells[mac].display().rstrip(NL)}")
             macs.append(mac)
             # logger.debug(F"len of macs{len(macs)}")
 
@@ -218,17 +235,16 @@ class WifiInformation:
         return (essids, counter)
 
     def dupefinder(self):
-        '''Find duplicate entries'''
+        """Find duplicate entries"""
         macs = []
         for mac in self.cells.keys():
             if mac in macs:
-                logger.info (F"Duplicate found: {self.cells[mac].cid}: {mac}")
+                logger.info(f"Duplicate found: {self.cells[mac].cid}: {mac}")
             macs.append(mac)
         return len(self.cells)
 
-
     def display(self):
-        '''pretty print'''
+        """pretty print"""
         output = ""
         for cell in self.cells.values():
             output += cell.display(show_essid=False)

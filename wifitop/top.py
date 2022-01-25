@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-'''main entry point'''
+"""main entry point"""
 
-#vim: foldmethod=indent
+# vim: foldmethod=indent
 # vim: tw=100 foldmethod=marker
 #
 # This code is distributed under the MIT License
@@ -16,9 +16,10 @@ from wifitop.parse_args import args
 
 logger = logging.getLogger(__name__)
 
+
 def main():
-    '''Main Config'''
-    try: # initialize threads
+    """Main Config"""
+    try:  # initialize threads
 
         # initialize queues
         # client_q   = queue.Queue()
@@ -31,22 +32,20 @@ def main():
 
         # start the app
         # app.run(debug=True, host='0.0.0.0', port=int(args.port))
-        print ("hello")
+        print("hello")
     except Exception as e:
         # We can also close the cursor if we are done with it
         logging.error("error on thread startup: " + str(e))
-        raise(e)
-    return (0)
+        raise (e)
+    return 0
 
 
 mystring = "   tlink"
 newstring = re.sub("^ *", "x", mystring)
-print(F" <{mystring}> - <{newstring}>")
+print(f" <{mystring}> - <{newstring}>")
 
 sys.exit(0)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Run the app
     main()
-
-

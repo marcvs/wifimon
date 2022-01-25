@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-''' a wifi signal strength display '''
+""" a wifi signal strength display """
 
 # vim: foldmethod=indent : tw=100
 #
@@ -11,6 +11,7 @@
 import sys
 import logging
 from time import sleep
+
 # import threading
 # import Queue
 # from getch.getch import getch
@@ -18,21 +19,21 @@ from time import sleep
 from wifitop.parse_args import args
 import wifitop.logsetup
 
+
 from wifitop.wifiinformation import WifiInformation
 
 logger = logging.getLogger(__name__)
 
 
-
 if args.verbose:
-    print ("device: %s" % args.wifiDevice)
+    print("device: %s" % args.wifiDevice)
 wifiInfo = WifiInformation()
 
 # for i in range(0,10):
-print ("Collecting data......")
+print("Collecting data......")
 while True:
     logger.info("--------------------------------------------------")
-    info = ''
+    info = ""
     try:
         wifiInfo.update_cells()
         wifiInfo.update_connected_cell()
@@ -49,15 +50,15 @@ while True:
         print("\n\n--------------------------------------------------")
 
         df_cellnum = wifiInfo.dupefinder()
-        print (info)
+        print(info)
         try:
-            logger.info(F"ee: {ee_cellnum} -- tot: {df_cellnum} here: {len(wifiInfo.cells)}")
+            logger.info(f"ee: {ee_cellnum} -- tot: {df_cellnum} here: {len(wifiInfo.cells)}")
         except NameError:
-            logger.info(F"-- tot: {df_cellnum} here: {len(wifiInfo.cells)}")
+            logger.info(f"-- tot: {df_cellnum} here: {len(wifiInfo.cells)}")
 
         if args.once:
             sys.exit(0)
         sleep(0.5)
     except KeyboardInterrupt:
-        print ("\n\nTschö!\n")
+        print("\n\nTschö!\n")
         sys.exit(0)
